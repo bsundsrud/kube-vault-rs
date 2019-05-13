@@ -1,0 +1,38 @@
+language: rust
+services:
+- docker
+env:
+  global:
+  - PROJECT_NAME: kube-vault
+matrix:
+  fast_finish: true
+  include:
+  - os: linux
+    rust: stable
+    env: TARGET=x86_64-linux
+  - os: osx
+    rust: stable
+    env: TARGET=x86_64-osx
+  - os: linux
+    rust: nightly
+    script:
+    - rustup component add clippy || travis_terminate 0
+    - cargo clippy -- -D clippy::all
+script:
+- cargo build --verbose --all
+- cargo test --verbose --all
+before_deploy: ci/before_deploy.sh
+branches:
+  only:
+  - master
+  - "/^\\d+\\.\\d+\\.\\d+.*$/"
+deploy:
+  provider: releases
+  file_glob: true
+  file: ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tgz
+  on:
+    condition: $TRAVIS_RUST_VERSION = stable
+    branch: master
+    tags: true
+  api_key:
+    secure: BkpenQt6T9JCKdrd3omFLKu+v2QydyivpROL0f2tFO2MEd3fjF3FvTlXdADQIj0srUCgY0tJu8PPHkfUmr2b+gDycWLgtC1aMEgZhmnGjCsxu4KGH+UuPuFqHheQ00AHe6FXXrlYZNVLUyUC/pGGsTIEG9W6dt8Kko4bw/8FJlAhe+RCxlzERUBUDWFzO5ivorUlm5BEFjoGCCS6/sWkR67P5U3PPhz3DCWn+562FT4hqJYyR6XAI4JzGiaVWKzHKjkUa6W/8DEyoylfxAzUYzou3RMoSrcwrOz2BRnWSE5fxu2wGpfx2Q0DTZIVeJ87+1HTLY/8132mCwbN6FBB1xToZLP2yqmjeXKmamHnDCT1s9OD3kGPTX1WwkNhXN5/AIpRx1Z552iplcPiZFlzOn5Ffg5LgxVtV0uxdBi7sj0zfc+eqgCbnxydWmKyEnwDiE9lGDbSJzM3lx646ZpB64s6z3XlG+5WP4nwVWjYq8KrMVBn5nNGZFwSECpe7KtzgS0+T6WIlwhGillL9WRMKPF2S0bBrpGlCVNWPxY/l/dUSAJtZs6iKR24J6JMuT+yUCBXAjXjU/2JiH75LV1xeLoWPekJpHYp37D06nZ0+k7mDQLl4Z8xOW56S4CcJvfNMDrp3luPrVwbTnqQn6+1tIlHYkME1QWPALPUdurjJes=
