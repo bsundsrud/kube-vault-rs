@@ -1,0 +1,16 @@
+[package]
+name = "kube-vault"
+version = "0.1.0"
+authors = ["Benn Sundsrud <benn.sundsrud@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1.0.90"
+serde_yaml = "0.8.8"
+failure = "0.1.5"
+clap = "2.33.0"
+dotenv = "0.13.0"
+vault = { path = "../vault" }
+askama = "0.8.0"
+base64 = "0.10.1"
+openssl-probe = "0.1.2"
