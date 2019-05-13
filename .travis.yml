@@ -14,7 +14,8 @@ matrix:
     rust: stable
     env: TARGET=x86_64-osx
   - os: linux
-    rust: nightly
+    rust: stable
+    env: IGNORE_DEPLOY=true
     script:
     - rustup component add clippy || travis_terminate 0
     - cargo clippy -- -D clippy::all
@@ -31,7 +32,7 @@ deploy:
   file_glob: true
   file: ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tgz
   on:
-    condition: $TRAVIS_RUST_VERSION = stable
+    condition: $IGNORE_DEPLOY != true
     branch: master
     tags: true
   api_key:
