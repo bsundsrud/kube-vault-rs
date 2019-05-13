@@ -6,7 +6,6 @@ is_osx() {
     esac
 }
 
-cd ..
 if is_osx; then
     make release
 else
