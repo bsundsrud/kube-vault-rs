@@ -3,6 +3,7 @@ use reqwest::Error as HttpError;
 use reqwest::StatusCode;
 use serde_json::Error as JsonError;
 use std::convert::From;
+use std::string::ToString;
 use url::ParseError;
 
 #[derive(Debug, Fail)]
@@ -38,7 +39,7 @@ impl From<HttpError> for VaultClientError {
                 VaultClientError::NotAuthorized(e.into())
             }
             Some(StatusCode::NOT_FOUND) => {
-                let url = e.url().map(|u| u.to_string()).unwrap_or_else(String::new);
+                let url = e.url().map(ToString::to_string).unwrap_or_else(String::new);
                 VaultClientError::NotFound(url)
             }
             _ => VaultClientError::Unknown(e.into()),

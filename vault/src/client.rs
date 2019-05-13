@@ -80,7 +80,7 @@ impl VaultClient {
 
         VaultClient {
             client,
-            vault_addr: vault_addr.into(),
+            vault_addr,
             auth_backend,
         }
     }
@@ -152,7 +152,7 @@ impl VaultClient {
     }
 }
 
-fn strip_leading_slash<'a>(p: &'a str) -> Cow<'a, str> {
+fn strip_leading_slash(p: &str) -> Cow<str> {
     if p.starts_with('/') {
         Cow::Owned(p.chars().skip_while(|c| *c == '/').collect())
     } else {
