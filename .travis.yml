@@ -21,11 +21,11 @@ matrix:
     rust: stable
     env: IGNORE_DEPLOY=true
     script:
-    - rustup component add clippy || travis_terminate 0
-    - cargo clippy -- -D clippy::all
+    - rustup component add clippy || travis_terminate 1
+    - rustup component add rustfmt || travis_terminate 1
+    - make lint
 script:
-- cargo build --verbose --all
-- cargo test --verbose --all
+- make test
 before_deploy: ci/before_deploy.sh
 branches:
   only:
@@ -34,7 +34,8 @@ branches:
 deploy:
   provider: releases
   file_glob: true
-  file: ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tgz
+  file: dist/*
+  skip_cleanup: true
   on:
     condition: $IGNORE_DEPLOY != true
     branch: master

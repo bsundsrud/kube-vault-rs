@@ -1,4 +1,6 @@
-# `kube-vault`
+# kube-vault
+
+[![Build Status](https://travis-ci.org/bsundsrud/kube-vault-rs.svg?branch=master)](https://travis-ci.org/bsundsrud/kube-vault-rs)
 
 List, Verify, and Generate Kubernetes Secrets based on [Vault](https://www.vaultproject.io/) as the source of truth.
 
@@ -102,8 +104,8 @@ and output a yaml kubernetes secret definition on stdout.  This can be applied t
 
 ## Building
 
-A 2018-Edition Rust is required, and optionally Make and Docker. The Makefile builds the release with 
-musl so it is fully statically linked, and uses a docker container to do so.
+A 2018-Edition Rust is required, and optionally Make. The Makefile builds the release with 
+musl on Linux so it is fully statically linked.
 
 Running `make && sudo make install` will install kube-vault as `/usr/local/bin/kube-vault`.
 If you want to install it elsewhere or not system-wide you can set the `PREFIX` make variable:
