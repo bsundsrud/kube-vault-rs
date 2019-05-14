@@ -1,15 +1,13 @@
 #!/bin/sh
-is_osx() {
+is_linux() {
     case "$TRAVIS_OS_NAME" in
-        osx) return 0 ;;
+        linux) return 0 ;;
         *)   return 1 ;;
     esac
 }
 
-if is_osx; then
-    make release BUILD_DIR="target/release"
-else
+if is_linux; then
     rustup target add x86_64-unknown-linux-musl
-    make release-musl
 fi
-make dist VERSION="$TRAVIS_TAG"
+
+make release dist VERSION="$TRAVIS_TAG" TARGET="$TARGET"
