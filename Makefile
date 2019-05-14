@@ -6,8 +6,8 @@ VERSION := $(shell cat kube-vault/Cargo.toml | grep version | sed -e 's/.*versio
 BUILD_DIR := target/release
 CARGO_ARGS :=
 ifeq ($(shell uname -s), Linux)
-  CARGO_ARGS = $(CARGO_ARGS) --target x86_64-unknown-linux-musl
-  BUILD_DIR = target/x86_64-unknown-linux-musl/release
+  CARGO_ARGS := $(CARGO_ARGS) --target x86_64-unknown-linux-musl
+  BUILD_DIR := target/x86_64-unknown-linux-musl/release
 endif
 EXE_PATH := $(BUILD_DIR)/$(EXE)
 
