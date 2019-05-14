@@ -7,7 +7,7 @@ is_osx() {
 }
 
 if is_osx; then
-    make release
+    make release BUILD_DIR="target/release"
 else
     rustup target add x86_64-unknown-linux-musl
     make release-musl
