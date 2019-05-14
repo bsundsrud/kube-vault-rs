@@ -6,6 +6,10 @@ List, Verify, and Generate Kubernetes Secrets based on [Vault](https://www.vault
 
 Intended to be used with either [Helm](https://helm.sh/) or loose kubernetes files.
 
+## Installing
+
+See the [releases](https://github.com/bsundsrud/kube-vault-rs/releases) page to download a precompiled executable for your platform.
+
 ## Vault Env Variables
 
 `kube-vault` will detect standard Vault environment variables and use them for its internal client.
