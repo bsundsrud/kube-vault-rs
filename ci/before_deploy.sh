@@ -9,7 +9,7 @@ is_osx() {
 if is_osx; then
     make release
 else
-    rustup add target x86_64-unknown-linux-musl
+    rustup target add x86_64-unknown-linux-musl
     make release-musl
 fi
 make dist VERSION="$TRAVIS_TAG"
