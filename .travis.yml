@@ -10,6 +10,10 @@ matrix:
   - os: linux
     rust: stable
     env: TARGET=x86_64-linux
+    addons:
+      apt:
+        packages:
+          - musl-tools
   - os: osx
     rust: stable
     env: TARGET=x86_64-osx

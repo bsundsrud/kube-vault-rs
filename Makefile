@@ -9,10 +9,8 @@ VERSION := $(shell cat kube-vault/Cargo.toml | grep version | sed -e 's/.*versio
 release:
 	cargo build --release
 
-release-static:
-	docker run --rm -it \
-	-v "$(shell pwd)":/home/rust/src \
-	ekidd/rust-musl-builder cargo build --release
+release-musl:
+	cargo build --release --target x86_64-unknown-linux-musl
 
 install:
 	install $(EXE_PATH) $(PREFIX)/bin
