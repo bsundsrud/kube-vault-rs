@@ -1,10 +1,13 @@
 use crate::haystack::Corpus;
 use serde_yaml::Mapping;
 use serde_yaml::Value;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
-pub struct EnvSecret {
+pub struct SecretRef(String);
+
+#[derive(Debug)]
+pub struct SecretKeyRef {
     name: String,
     key: String,
 }
@@ -47,17 +50,27 @@ fn value_contains(v: &Value, substr: &str) -> bool {
     }
 }
 
-fn filtermap_env_secret(m: &Mapping) -> Option<EnvSecret> {
+fn filter_map_secret_ref(m: &Mapping) -> Option<SecretRef> {
+    let k = "secretRef".into();
+    let secrets = m.get(&k)?.as_mapping()?;
+    let name = secrets.get(&"name".into())?.as_str()?.to_string();
+    Some(SecretRef(name))
+}
+
+fn filter_map_secret_key_ref(m: &Mapping) -> Option<SecretKeyRef> {
     let k = "secretKeyRef".into();
     let secrets = m.get(&k)?.as_mapping()?;
     let name = secrets.get(&"name".into())?.as_str()?.to_string();
     let key = secrets.get(&"key".into())?.as_str()?.to_string();
-
-    Some(EnvSecret { name, key })
+    Some(SecretKeyRef { name, key })
 }
 
-fn find_env_secrets(corpus: &Corpus) -> Vec<EnvSecret> {
-    corpus.filter_map_mappings(&filtermap_env_secret)
+fn find_secret_refs(corpus: &Corpus) -> Vec<SecretRef> {
+    corpus.filter_map_mappings(&filter_map_secret_ref)
+}
+
+fn find_secret_key_refs(corpus: &Corpus) -> Vec<SecretKeyRef> {
+    corpus.filter_map_mappings(&filter_map_secret_key_ref)
 }
 
 fn filter_map_vol_secrets(m: &Mapping) -> Option<Vec<VolumeSecret>> {
@@ -153,10 +166,21 @@ fn find_all_vol_usages(corpus: &Corpus, secrets: &[VolumeSecret]) -> Vec<VolumeU
     res
 }
 
-fn print_env_secrets(map: &HashMap<String, Vec<String>>) {
-    println!("ENVIRONMENT SECRETS");
+fn print_secret_refs<T: AsRef<str>>(secret_refs: &[T], map: &HashMap<String, Vec<String>>) {
+    println!("REFERENCES TO WHOLE SECRETS");
+    if secret_refs.is_empty() {
+        println!("(None)");
+    }
+    for s in secret_refs {
+        println!("  Secret '{}'", s.as_ref());
+    }
+    println!();
+    println!("REFERENCES TO SECRET KEYS");
+    if map.is_empty() {
+        println!("(None)");
+    }
     for (k, v) in map {
-        println!("  Secret '{}'", k);
+        println!("  Secret '{}':", k);
         for s in v {
             println!("    {}", s);
         }
@@ -165,8 +189,11 @@ fn print_env_secrets(map: &HashMap<String, Vec<String>>) {
 
 fn print_vol_secrets(map: &HashMap<String, Vec<VolumeUsage>>) {
     println!("VOLUME SECRETS");
+    if map.is_empty() {
+        println!("(None)");
+    }
     for (k, v) in map {
-        println!("   Secret '{}'", k);
+        println!("   Secret '{}':", k);
         for usage in v {
             println!("    Container: {}", usage.mounted_in);
             println!("    Volume Name: {}", usage.volume_name);
@@ -182,8 +209,8 @@ fn print_vol_secrets(map: &HashMap<String, Vec<VolumeUsage>>) {
     }
 }
 
-pub fn grouped_env_secrets(corpus: &Corpus) -> HashMap<String, Vec<String>> {
-    let env_secrets = find_env_secrets(&corpus);
+pub fn grouped_secret_key_refs(corpus: &Corpus) -> HashMap<String, Vec<String>> {
+    let env_secrets = find_secret_key_refs(&corpus);
     env_secrets
         .into_iter()
         .map(|s| (s.name, s.key))
@@ -192,6 +219,10 @@ pub fn grouped_env_secrets(corpus: &Corpus) -> HashMap<String, Vec<String>> {
             v.push(k);
             acc
         })
+}
+
+pub fn grouped_secret_refs(corpus: &Corpus) -> Vec<String> {
+    find_secret_refs(&corpus).into_iter().map(|r| r.0).collect()
 }
 
 pub fn grouped_vol_secrets(corpus: &Corpus) -> HashMap<String, Vec<VolumeUsage>> {
@@ -207,10 +238,22 @@ pub fn grouped_vol_secrets(corpus: &Corpus) -> HashMap<String, Vec<VolumeUsage>>
         })
 }
 
+pub fn referenced_k8s_secret_names(corpus: &Corpus) -> HashSet<String> {
+    let mut res = HashSet::new();
+    let secret_refs = find_secret_refs(&corpus);
+    let secret_key_refs = find_secret_key_refs(&corpus);
+    let vol_refs = find_vol_secrets(&corpus);
+    res.extend(secret_refs.into_iter().map(|r| r.0));
+    res.extend(secret_key_refs.into_iter().map(|r| r.name));
+    res.extend(vol_refs.into_iter().map(|r| r.secret_name));
+    res
+}
+
 pub fn list_secrets(corpus: &Corpus) {
-    let grouped_env = grouped_env_secrets(&corpus);
+    let grouped_secret_refs = grouped_secret_refs(&corpus);
+    let grouped_secret_key_refs = grouped_secret_key_refs(&corpus);
     let grouped_vols = grouped_vol_secrets(&corpus);
-    print_env_secrets(&grouped_env);
+    print_secret_refs(&grouped_secret_refs, &grouped_secret_key_refs);
     println!();
     print_vol_secrets(&grouped_vols);
 }

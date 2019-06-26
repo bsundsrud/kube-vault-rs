@@ -45,13 +45,13 @@ pub fn create_secret_template(
     client: &mut VaultClient,
 ) -> Result<(), Error> {
     for mapping in mappings {
-        let data = client.get_kv_secret(&mapping.vault_engine, &mapping.vault_path)?;
+        let data = client.get_kv_secret(&mapping.vault_path.engine, &mapping.vault_path.path)?;
         let template = SecretsTemplate::new(
             client.vault_addr().as_str(),
             &mapping.kubernetes_name,
             &namespace,
-            &mapping.vault_engine,
-            &mapping.vault_path,
+            &mapping.vault_path.engine,
+            &mapping.vault_path.path,
             data,
         );
         println!("{}", template.render().unwrap());

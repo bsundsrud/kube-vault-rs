@@ -16,7 +16,7 @@ EXE_PATH := $(BUILD_DIR)/$(EXE)
 release:
 	cargo build --release $(CARGO_ARGS)
 
-install:
+install: release
 	install $(EXE_PATH) $(PREFIX)/bin
 
 build:
