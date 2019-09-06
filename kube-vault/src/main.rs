@@ -6,6 +6,7 @@ use std::io;
 use vault::VaultClient;
 
 mod chart;
+mod export;
 mod generate;
 pub mod haystack;
 mod verify;
@@ -202,6 +203,24 @@ fn cli_main() -> Result<(), Error> {
                         .takes_value(true)
                         .help("k8s namespace for generated secrets"),
                 ),
+        ).subcommand(
+            SubCommand::with_name("export")
+                .about("Export all vault secrets in a path as k8s secrets")
+                .arg(
+                    Arg::with_name("vault-path")
+                        .short("p")
+                        .takes_value(true)
+                        .validator(validate_vault_path)
+                        .required(true)
+                        .help("Vault path to source secrets from (ex. engine-name:/apps/my-app)")
+                )
+                .arg(
+                    Arg::with_name("namespace")
+                        .short("N")
+                        .required(true)
+                        .takes_value(true)
+                        .help("k8s namespace for generated secrets"),
+                ),
         );
     let matches = app.get_matches();
 
@@ -253,6 +272,19 @@ fn cli_main() -> Result<(), Error> {
             let mappings = SecretMapping::from_secret_names_and_vault_path(secrets, vault_path);
             generate::create_secret_template(&mappings, &namespace, &mut client)?;
         }
+    } else if let Some(subcommand) = matches.subcommand_matches("export") {
+        let namespace = subcommand.value_of("namespace").unwrap(); // Is a required field
+        let client = VaultClient::from_env();
+        let mut client = match client {
+            Ok(c) => c,
+            Err(e) => bail!("Could not create vault client: {}", e),
+        };
+        let vault_path = subcommand
+            .value_of("vault-path")
+            .map(parse_vault_path)
+            .unwrap();
+        let secrets = export::secrets_in_path(&mut client, &vault_path)?;
+        generate::create_secret_template(&secrets, &namespace, &mut client)?;
     }
 
     Ok(())

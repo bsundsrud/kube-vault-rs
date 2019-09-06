@@ -1,10 +1,9 @@
 use failure::{Error, Fail};
-use reqwest::Error as HttpError;
 use reqwest::StatusCode;
+use reqwest::{Error as HttpError, UrlError};
 use serde_json::Error as JsonError;
 use std::convert::From;
 use std::string::ToString;
-use url::ParseError;
 
 #[derive(Debug, Fail)]
 pub enum VaultClientError {
@@ -20,8 +19,8 @@ pub enum VaultClientError {
     Unknown(Error),
 }
 
-impl From<ParseError> for VaultClientError {
-    fn from(e: ParseError) -> VaultClientError {
+impl From<UrlError> for VaultClientError {
+    fn from(e: UrlError) -> VaultClientError {
         VaultClientError::InvalidUrl(e.into())
     }
 }
