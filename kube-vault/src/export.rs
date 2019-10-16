@@ -23,3 +23,12 @@ pub fn secrets_in_path(
         .map(|k| SecretMapping::new(k, join_path(&path, k)))
         .collect())
 }
+
+pub fn single_secret(
+    client: &mut VaultClient,
+    path: &VaultPath,
+    secret_name: &str,
+) -> Result<Option<String>, Error> {
+    let keys = client.get_kv_secret(&path.engine, &path.path)?;
+    Ok(keys.get(secret_name).map(|s| s.clone()))
+}
