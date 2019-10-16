@@ -30,5 +30,5 @@ pub fn single_secret(
     secret_name: &str,
 ) -> Result<Option<String>, Error> {
     let keys = client.get_kv_secret(&path.engine, &path.path)?;
-    Ok(keys.get(secret_name).map(|s| s.clone()))
+    Ok(keys.get(secret_name).cloned())
 }

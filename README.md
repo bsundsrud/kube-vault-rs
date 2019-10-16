@@ -38,8 +38,6 @@ if they are not already present in the environment.
 ## Commands
 
 ```
-$ kube-vault -h
-kube-vault
 Manage k8s secrets with vault as the source-of-truth
 
 USAGE:
@@ -50,7 +48,9 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
+    export      Export all vault secrets in a path as k8s secrets
     generate    Create k8s secrets from vault
+    get         Retrieve a single secret
     help        Prints this message or the help of the given subcommand(s)
     list        Lists secrets accessed by a chart
     verify      Verify secrets used by a chart exist in vault
@@ -136,6 +136,49 @@ The `-m` option will map from vault secret to kubernetes secret directly,
 referenced in the kubefiles is assumed to correspond to a secret in
 the given vault path. `-m` and `-p` are mutually exclusive.
 
+### `export`
+
+```
+Export all vault secrets in a path as k8s secrets
+
+USAGE:
+    kube-vault export -N <namespace> -p <vault-path>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -N <namespace>         k8s namespace for generated secrets
+    -p <vault-path>        Vault path to source secrets from (ex. engine-name:/apps/my-app)
+```
+
+`export` will read all KV secrets found at the vault path specified with `-p`
+and export them as secrets for the namespace given with `-N`.  The kubernetes
+secret name will be the same as the vault secret name.
+
+### `get`
+
+```
+Retrieve a single secret
+
+USAGE:
+    kube-vault get <SECRET> -p <vault-path>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -p <vault-path>        Vault path to source secrets from (ex. engine-name:/apps/my-app)
+
+ARGS:
+    <SECRET>    Name of secret to retrieve
+```
+
+`get` retrieves a single secret at the given path, useful for scripting purposes
+so installing a separate vault client is unnecessary.
+
 ## Building
 
 A 2018-Edition Rust is required, and optionally Make.
@@ -145,4 +188,4 @@ Running `make && sudo make install` will install kube-vault as `/usr/local/bin/k
 If you want to install it elsewhere or not system-wide you can set the
 `PREFIX` make variable:
 
-`make && make PREFIX=$HOME install` will install to `$HOME/bin`.
+`make PREFIX=$HOME install` will install to `$HOME/bin`.

@@ -13,6 +13,8 @@ mod verify;
 
 use haystack::Corpus;
 
+const VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
+
 #[derive(Debug, Clone)]
 pub struct VaultPath {
     pub engine: String,
@@ -148,6 +150,7 @@ fn cli_main() -> Result<(), Error> {
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .author("Benn Sundsrud <benn.sundsrud@gmail.com>")
         .about("Manage k8s secrets with vault as the source-of-truth")
+        .version(VERSION.unwrap_or("unknown"))
         .subcommand(SubCommand::with_name("list").about("Lists secrets accessed by a chart"))
         .subcommand(
             SubCommand::with_name("verify")
